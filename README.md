@@ -31,5 +31,11 @@ card to view them all as a list in lovelace:
 
 This is reverse engineered code.
 
+This component shares quite a bit of code and architecture
+with my package tracker for Postnord[2], DHL[3] and bring[4].
+
 
 1. https://github.com/thomasloven/lovelace-auto-entities
+2. https://github.com/glance-/postnord
+3. https://github.com/glance-/dhl
+4. https://github.com/glance-/bring
