@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "domain": "dbschenker",
+  "name": "DbSchenker",
+  "documentation": "Not yet",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["glance-"]
+}
