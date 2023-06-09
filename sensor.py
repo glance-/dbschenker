@@ -58,11 +58,12 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     """Setup the dbschenker sensor"""
     component = hass.data.get(DOMAIN)
 
+    update_interval = config.get(CONF_SCAN_INTERVAL, SCAN_INTERVAL)
+
     # Use the EntityComponent to track all packages, and create a group of them
     if component is None:
-        component = hass.data[DOMAIN] = EntityComponent(_LOGGER, DOMAIN, hass)
-
-    update_interval = config.get(CONF_SCAN_INTERVAL, SCAN_INTERVAL)
+        component = hass.data[DOMAIN] = EntityComponent(_LOGGER, DOMAIN, hass,
+                update_interval)
 
     json_path = hass.config.path(REGISTRATIONS_FILE)
 
@@ -79,8 +80,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
         await hass.async_add_job(save_json, json_path, registrations)
 
-        return await component.async_add_entities([
-            DbSchenkerSensor(hass, package_id, update_interval)])
+        return await component.async_add_entities([DbSchenkerSensor(hass, package_id)])
 
     hass.services.async_register(
         DOMAIN,
@@ -111,7 +111,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     if registrations is None:
         return None
 
-    return await component.async_add_entities([DbSchenkerSensor(hass, package_id, update_interval) for package_id in registrations], False)
+    return await component.async_add_entities([DbSchenkerSensor(hass, package_id) for package_id in registrations], False)
 
 
 def _load_config(filename):
@@ -126,14 +126,13 @@ def _load_config(filename):
 class DbSchenkerSensor(RestoreEntity):
     """DbSchenker Sensor."""
 
-    def __init__(self, hass, package_id, update_interval):
+    def __init__(self, hass, package_id):
         """Initialize the sensor."""
         self.hass = hass
         self._package_id = package_id
         self._attributes = None
         self._state = None
         self._data = None
-        self.update = Throttle(update_interval)(self._update)
 
     @property
     def entity_id(self):
@@ -204,7 +203,7 @@ class DbSchenkerSensor(RestoreEntity):
         # Everythings array in php...
         return self._parse_array(data)
 
-    def _update(self):
+    def update(self):
         """Update sensor state."""
         response = requests.get(DBSCHENKER_API_URL.format(
             self._package_id), timeout=10)
